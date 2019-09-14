@@ -27,15 +27,14 @@ update_beliefs(Perc):-
 
 	% El agente olvida
 	retractall(time(_)),
-	
-   
+
+
 
 
 
 	% y recuerda lo que percibió
-
-    forall(member(X, Perc), rev(X)),
-   actualizarTerreno(Perc).
+   actualizarTerreno(Perc),
+   forall(member(X, Perc), rev(X)).
 
 
 %
@@ -84,11 +83,11 @@ update_beliefs(Perc):-
 %----at/2-----------------------------------------------%
 rev(at(X,Y)):-at(X,Y).
 rev(at(X,Y1)):-at(X,Y2),Y1\=Y2,retractall(at(X,Y2)),assert(at(X,Y1)).%veo la misma entidad en otra pos
-rev(at(X,Y)):-retractall(has(_Entity,X)),assert(at(X,Y)).%si veo un objeto tirado que tenia una entidad borro el has
+rev(at(X,Y)):-has(_Entity, X),retractall(has(_Entity,X)),assert(at(X,Y)).%si veo un objeto tirado que tenia una entidad borro el has
 rev(at(X,Y)):-assert(at(X,Y)).
 rev(atPos(X,Y)):- atPos(X,Y).
 rev(atPos(X,Y1)):-atPos(X,Y2),Y1\=Y2,retractall(atPos(X,Y2)),assert(atPos(X,Y1)).
-rev(atPos(X,Y)):-retractall(has(_Entity,X)),assert(atPos(X,Y)).
+rev(atPos(X,Y)):-has(_Entity, X),retractall(has(_Entity,X)),assert(atPos(X,Y)).
 rev(atPos(X,Y)):-assert(atPos(X,Y)).
 %--------------------------------------------------------%
 
@@ -133,16 +132,14 @@ rev(has(X,Y)):-assert(has(X,Y)).
 
 
 
-actualizarTerreno(Perc):- forall(member(X, Perc), chekearAt(X,Perc)).
+actualizarTerreno(Perc):- forall(member(node(X,_Y,_Z), Perc), chequearAt(X,Perc)).
 
 
 
 
-chekearAt(node(X,Y,Z),Perc):-at(Entidad,X),not(member(at(Entidad,X),Perc)),                           
-                           retractall(at(Entidad,X)),retractall(atPos(Entidad,_Vec)).
-chekearAt(X,Y).
-
-
+chequearAt(NodoId,Perc):-at(Entidad,NodoId),not(member(at(Entidad,NodoId),Perc)),
+                           retractall(at(Entidad,NodoId)),retractall(atPos(Entidad,_Vec)).
+chequearAt(_,_).
 
 
 

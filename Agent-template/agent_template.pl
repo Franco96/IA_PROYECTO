@@ -75,14 +75,6 @@ decide_action(Action):-
 	Action = attack([agent, Target]).
 
 
-/*
-decide_action(Action):-
-	at([agent, me], MyNode),
-	findall(Node, ady(MyNode, Node), PossibleDestNodes),
-	random_member(DestNode, PossibleDestNodes), % Selecciona aleatoriamente una posición destino.
-	Action = move(DestNode).
-
-*/
 
 decide_action(Action):-plan([Action]),retractall(plan([Action])).
 

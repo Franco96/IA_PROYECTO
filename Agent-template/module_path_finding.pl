@@ -15,7 +15,7 @@
 %
 
 
-buscar_plan_desplazamiento(Metas,Plan,Destino):-at([agent, me], MyNode),node(MyNode,Vec,Adj),
+buscar_plan_desplazamiento(Metas,Plan,Destino):-at([agent, me], MyNode),node(MyNode,_Vec,_Adj),
                                                 busqueda([nodo(MyNode,0,[])],[],Metas,[Destino|Camino]),
                                                 acomodarPlan([Destino|Camino],[_X|Plan]).
 
@@ -53,27 +53,34 @@ generarVecinos(nodo(Id,Costo,Camino),Metas,Vecinos):-node(Id,_,Adyacentes),
 
 agregar(Frontera,Vis,[],Frontera,Vis).
 
+%vecino no está en frontera ni visitado.
 
 agregar(Frontera,Vis,[nodo(Id,Costo,Camino)|Vecinos],NuevaF,NuevoVis):-not(member(nodo(Id,Cost,_Cam),Frontera)),
                                                                       not(member(nodo(Id,Cost,_Cam),Vis)),
                                                    agregar([nodo(Id,Costo,Camino)|Frontera],Vis,Vecinos,NuevaF,NuevoVis).
 
 
+%vecino ya está en frontera y es mejor que el nuevo encontrado.
 agregar(Frontera,Vis,[nodo(Id,Costo,_Camino)|Vecinos],NuevaF,NuevoVis):-member(nodo(Id,Cost,_Cam),Frontera),
                                                                 Costo>=Cost,
                                                           agregar(Frontera,Vis,Vecinos,NuevaF,NuevoVis).
 
-
+%vecino ya fue visitado por un mejor camino.
 agregar(Frontera,Vis,[nodo(Id,Costo,_Camino)|Vecinos],NuevaF,NuevoVis):-member(nodo(Id,Cost,_Cam),Vis),
                                                                 Costo>=Cost,
                                                              agregar(Frontera,Vis,Vecinos,NuevaF,NuevoVis).
 
 
+% vecino estaba en la frontera pero ahora tiene mejor costo. borrar
+% viejo y agregar nuevo.
 agregar(Frontera,Vis,[nodo(Id,Costo,Camino)|Vecinos],NuevaF,NuevoVis):-member(nodo(Id,Cost,Cam),Frontera),
                                                                 Costo<Cost,
                                                                  delete_if_exists(nodo(Id,Cost,Cam),Frontera,Ftemp),
                                                                agregar([nodo(Id,Costo,Camino)|Ftemp],Vis,Vecinos,NuevaF,NuevoVis).
 
+
+%vecino ya habia sido visitado pero ahora se encuentra nuevamente con
+% costo menor.
 agregar(Frontera,Vis,[nodo(Id,Costo,Camino)|Vecinos],NuevaF,NuevoVis):-member(nodo(Id,Cost,Cam),Vis),
                                                                 Costo<Cost,
                                                                  delete_if_exists(nodo(Id,Cost,Cam),Vis,VisTemp),
@@ -112,13 +119,10 @@ heuristicas(Vec,[nodoM(_IdMeta,VecM)|Metas],Lista):-heuristicas(Vec,Metas,Lista2
 inserta(X,[],[X]).
 
 inserta(X,[Y|L],[Y|XenL]) :-
-          menor(Y,X), inserta(X,L,XenL).
+          Y<X, inserta(X,L,XenL).
 
-inserta(X,[Y|L],[X,Y|L]) :- menorig(X,Y).
+inserta(X,[Y|L],[X,Y|L]) :- X=<Y.
 
-
-menor(X,Y):-X<Y.
-menorig(X,Y):- X=<Y.
 
 
 
