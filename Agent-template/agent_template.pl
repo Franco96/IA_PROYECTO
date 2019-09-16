@@ -49,7 +49,7 @@ run:-
 % Arma la lista de nodos metas de la forma nodoM(Id,Vector(X,Y,Z)) para
 % simplificar el problema de busqueda.
 
-armarListaMetas(Lista):-findall(nodoM(Id,Vector),(at([relic,_R],Id),node(Id,Vector,_Ady)),Lista).
+armarListaMetas(Entity,Lista):-findall(nodoM(Id,Vector),(at([Entity,_R],Id),node(Id,Vector,_Ady)),Lista).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%
@@ -81,7 +81,7 @@ decide_action(Action):-plan([Action]),retractall(plan([Action])).
 decide_action(Action):-plan([Action|Xs]),retractall(plan([Action|Xs])),
                        assert(plan(Xs)).
 
-decide_action(Action):-armarListaMetas(Metas),buscar_plan_desplazamiento(Metas,[Action|Xs],_Destino)
+decide_action(Action):-armarListaMetas(relic,Metas),buscar_plan_desplazamiento(Metas,[Action|Xs],_Destino)
                         ,assert(plan(Xs)).
 
 

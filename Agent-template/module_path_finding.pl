@@ -98,13 +98,15 @@ ordenar_por_f([M|CL],Lord) :-
 
  particion(_X,[],[],[]).
 
- particion(M,[X|L],[X|L1],L2) :- menorf(X,M), particion(M,L,L1,L2).
+ particion(nodo(Id2,Cos2,Cam2),[nodo(Id1,Cos1,Cam1)|L],[nodo(Id1,Cos1,Cam1)|L1],L2) :- Cos1<Cos2,
+                                                                         particion(nodo(Id2,Cos2,Cam2),L,L1,L2).
 
- particion(M,[X|L],L1,[X|L2]) :-menorigf(M,X),particion(M,L,L1,L2).
+ particion(nodo(Id2,Cos2,Cam2),[nodo(Id1,Cos1,Cam1)|L],L1,[nodo(Id1,Cos1,Cam1)|L2]) :-Cos2=<Cos1,
+                                                                                       particion(nodo(Id2,Cos2,Cam2),L,L1,L2).
 
 
-menorf(nodo(_Id1,Cos1,_Cam1),nodo(_Id2,Cos2,_Cam2)):-Cos1<Cos2.
-menorigf(nodo(_Id1,Cos1,_Cam1),nodo(_Id2,Cos2,_Cam2)):-Cos1=<Cos2.
+%menorf(nodo(_Id1,Cos1,_Cam1),nodo(_Id2,Cos2,_Cam2)):-Cos1<Cos2.
+%menorigf(nodo(_Id1,Cos1,_Cam1),nodo(_Id2,Cos2,_Cam2)):-Cos1=<Cos2.
 
 
 heuristicas(_Vec,[],[]).
