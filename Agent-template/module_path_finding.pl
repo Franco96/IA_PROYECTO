@@ -55,8 +55,8 @@ agregar(Frontera,Vis,[],Frontera,Vis).
 
 %vecino no está en frontera ni visitado.
 
-agregar(Frontera,Vis,[nodo(Id,Costo,Camino)|Vecinos],NuevaF,NuevoVis):-not(member(nodo(Id,Cost,_Cam),Frontera)),
-                                                                      not(member(nodo(Id,Cost,_Cam),Vis)),
+agregar(Frontera,Vis,[nodo(Id,Costo,Camino)|Vecinos],NuevaF,NuevoVis):-not(member(nodo(Id,Cost,Cam),Frontera)),
+                                                                      not(member(nodo(Id,Cost,Cam),Vis)),
                                                    agregar([nodo(Id,Costo,Camino)|Frontera],Vis,Vecinos,NuevaF,NuevoVis).
 
 
@@ -104,9 +104,6 @@ ordenar_por_f([M|CL],Lord) :-
  particion(nodo(Id2,Cos2,Cam2),[nodo(Id1,Cos1,Cam1)|L],L1,[nodo(Id1,Cos1,Cam1)|L2]) :-Cos2=<Cos1,
                                                                                        particion(nodo(Id2,Cos2,Cam2),L,L1,L2).
 
-
-%menorf(nodo(_Id1,Cos1,_Cam1),nodo(_Id2,Cos2,_Cam2)):-Cos1<Cos2.
-%menorigf(nodo(_Id1,Cos1,_Cam1),nodo(_Id2,Cos2,_Cam2)):-Cos1=<Cos2.
 
 
 heuristicas(_Vec,[],[]).

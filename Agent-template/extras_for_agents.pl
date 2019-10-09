@@ -11,12 +11,7 @@
 	    random_member/2,
 	    last_element/2,
 	    delete_if_exists/3,
-	    distance/3,
-	    selectFirst/3,
-	    selectLast/3,
-	    agregarElem/3,
-	    list_min/2
-
+	    distance/3
 	  ]).
 
 
@@ -268,36 +263,10 @@ implies(_Ant, _Cons).
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%Metodos agregas por mi Lautaro%%%%%%%%%%%%%%%%%%
-
-
-selectLast([X],[],X).
-
-selectLast([Y|Ys],[Y|Z],X):-
-	  selectLast(Ys,Z,X).
-
-
-
-selectFirst([Elem|ListaRestante],ListaRestante,Elem).
-
-agregarElem(X,Lista,[X|Lista]).
 
 
 
 
-list_min(M, [X|Xs]):-
-         list_min2(M, X, Xs).
-
-list_min2(M, M, []):- !.
-
-list_min2(X, Y, [Z|Zs]):-
-          Z =< Y,
-          !,
-          list_min2(X, Z, Zs).
-
-list_min2(X, Y, [Z|Zs]):-
-          Z >= Y,
-          list_min2(X, Y, Zs).
 
 
 

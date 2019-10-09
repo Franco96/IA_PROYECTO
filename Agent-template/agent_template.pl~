@@ -49,8 +49,8 @@ run:-
 % Arma la lista de nodos metas de la forma nodoM(Id,Vector(X,Y,Z)) para
 % simplificar el problema de busqueda.
 
-armarListaMetas(Lista):-findall(nodoM(Id,Vector),(at([relic,R],Id),node(Id,Vector,Ady)),Lista).
-                       
+armarListaMetas(Lista):-findall(nodoM(Id,Vector),(at([potion,_R],Id),node(Id,Vector,_Ady)),Lista).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%
 
@@ -75,14 +75,6 @@ decide_action(Action):-
 	Action = attack([agent, Target]).
 
 
-/*
-decide_action(Action):-
-	at([agent, me], MyNode),
-	findall(Node, ady(MyNode, Node), PossibleDestNodes),
-	random_member(DestNode, PossibleDestNodes), % Selecciona aleatoriamente una posición destino.
-	Action = move(DestNode).
-
-*/
 
 decide_action(Action):-plan([Action]),retractall(plan([Action])).
 

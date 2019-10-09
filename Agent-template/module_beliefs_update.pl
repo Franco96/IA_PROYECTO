@@ -83,11 +83,11 @@ update_beliefs(Perc):-
 %----at/2-----------------------------------------------%
 rev(at(X,Y)):-at(X,Y).
 rev(at(X,Y1)):-at(X,Y2),Y1\=Y2,retractall(at(X,Y2)),assert(at(X,Y1)).%veo la misma entidad en otra pos
-rev(at(X,Y)):-has(_Entity, X),retractall(has(_Entity,X)),assert(at(X,Y)).%si veo un objeto tirado que tenia una entidad borro el has
+rev(at(X,Y)):-has(Entity, X),retractall(has(Entity,X)),assert(at(X,Y)).%si veo un objeto tirado que tenia una entidad borro el has
 rev(at(X,Y)):-assert(at(X,Y)).
 rev(atPos(X,Y)):- atPos(X,Y).
 rev(atPos(X,Y1)):-atPos(X,Y2),Y1\=Y2,retractall(atPos(X,Y2)),assert(atPos(X,Y1)).
-rev(atPos(X,Y)):-has(_Entity, X),retractall(has(_Entity,X)),assert(atPos(X,Y)).
+rev(atPos(X,Y)):-has(Entity, X),retractall(has(Entity,X)),assert(atPos(X,Y)).
 rev(atPos(X,Y)):-assert(atPos(X,Y)).
 %--------------------------------------------------------%
 

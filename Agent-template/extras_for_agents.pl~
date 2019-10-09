@@ -14,7 +14,8 @@
 	    distance/3,
 	    selectFirst/3,
 	    selectLast/3,
-	    agregarElem/3
+	    agregarElem/3,
+	    list_min/2
 
 	  ]).
 
@@ -284,6 +285,19 @@ agregarElem(X,Lista,[X|Lista]).
 
 
 
+list_min(M, [X|Xs]):-
+         list_min2(M, X, Xs).
+
+list_min2(M, M, []):- !.
+
+list_min2(X, Y, [Z|Zs]):-
+          Z =< Y,
+          !,
+          list_min2(X, Z, Zs).
+
+list_min2(X, Y, [Z|Zs]):-
+          Z >= Y,
+          list_min2(X, Y, Zs).
 
 
 
