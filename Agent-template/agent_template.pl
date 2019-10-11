@@ -146,4 +146,4 @@ si(InstanceID):- start_ag_instance(InstanceID).
 
 
 
-obtenerElemento([X|Xs],X,Xs).
+

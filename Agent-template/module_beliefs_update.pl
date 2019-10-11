@@ -25,40 +25,12 @@
 update_beliefs(Perc):-
 
 
-	% El agente olvida
-	retractall(time(_)),
-
-
-
-
 
 	% y recuerda lo que percibió
    actualizarTerreno(Perc),
    forall(member(X, Perc), rev(X)).
 
 
-%
-% para cada at(Entidad, ID) en la percepcion:
-%		si no tenias este at en la base de creencias:
-%			si tenias Entidad en otro at, borrar la vieja y agregar la nueva.
-%			si no tenias Entidad en otro at, agregar.
-%
-%		si ya tenias este at(ENtidad, ID)
-%			queda igual
-
-
-%	recorrer at(Entidad, Nodo) de tu base de creencias.
-%	si tenes at(Entidad, Nodo) y en la percepcion viene el Nodo pero no viene el at:
-%		borrar el at.
-%	si tenes at(Entidad, Nodo) y en la percepcion no viene el nodo:
-%		lo dejo tal cual está
-%
-%
-%
-%
-%
-%
-%
 %
 
 
@@ -68,7 +40,7 @@ update_beliefs(Perc):-
 %
 
 %---time/1---------------------------------------------%
- rev(time(X)):-assert(time(X)).
+ rev(time(X)):-	retractall(time(_)),assert(time(X)).
 %------------------------------------------------------%
 
 
@@ -99,13 +71,12 @@ rev(atPos(X,Y)):-assert(atPos(X,Y)).
 
 % ------has/2--------------------------------------------------------------%
 
- rev(has(X,Y)):-has(X,Y).
+rev(has(X,Y)):-has(X,Y).
 
- rev(has([agent,X],[Obj,Y])):-
-     retractall(at([Obj,Y],_N)),assert(has([agent,X],[Obj,Y])).
+rev(has([agent,X],[Obj,Y])):-at([bj,Y],_),retractall(at([Obj,Y],_)),assert(has([agent,X],[Obj,Y])).
 
-rev(has([agent,AgentName],[Obj,NameObj])):-retractall(has([_Building,_NameBuil],[Obj,NameObj])),
-                                            assert(has([agent,AgentName],[Obj,NameObj])).
+rev(has([agent,AgentName],[Obj,NameObj])):-has([Building,NameBuil],[Obj,NameObj]),
+                    retractall(has([Building,NameBuil],[Obj,NameObj])),assert(has([agent,AgentName],[Obj,NameObj])).
 
 rev(has(X,Y)):-assert(has(X,Y)).
 
@@ -118,13 +89,8 @@ rev(has(X,Y)):-assert(has(X,Y)).
 
 % ----entity_descr/2-----------------------------------------------%
 
- rev(entity_descr(X,Y)):- entity_descr(X,Y).
+ rev(entity_descr(X,Y1)):- retractall(entity_descr(X,_)),assert(entity_descr(X,Y1)).
 
- rev(entity_descr(X,Y1)):-entity_descr(X,Y2),Y1\=Y2,
-                           retractall(entity_descr(X,Y2)),assert(entity_descr(X,Y1)).
-
-
- rev(entity_descr(X,Y)):-assert(entity_descr(X,Y)).
 
 % ------------------------------------------------------------------------%
 
@@ -132,14 +98,44 @@ rev(has(X,Y)):-assert(has(X,Y)).
 
 
 
-actualizarTerreno(Perc):- forall(member(node(X,_Y,_Z), Perc), chequearAt(X,Perc)).
+% actualizarTerreno(Perc):- forall(member(node(X,_Y,_Z), Perc),
+% chequearAt(X,Perc)).
+% chequearAt(NodoId,Perc):-at(Entidad,NodoId),not(member(at(Entidad,NodoId),Perc)),
+%
+  %                         retractall(at(Entidad,NodoId)),retractall(atPos(Entidad,_Vec)).
+%chequearAt(_,_).
 
 
 
 
-chequearAt(NodoId,Perc):-at(Entidad,NodoId),not(member(at(Entidad,NodoId),Perc)),
-                           retractall(at(Entidad,NodoId)),retractall(atPos(Entidad,_Vec)).
+
+actualizarTerreno(Perc):- findall(at(X,Nodo),(at(X,Nodo)),ListaDeAt),
+
+                          forall(member(Ati,ListaDeAt),chequearAt(Ati,Perc)),
+
+                          findall(has([Entidad1,Name1],[Entidad2,Name2]),(has([Entidad1,Name1],[Entidad2,Name2])),ListaDeHas),
+
+                          forall(member(Hasi,ListaDeHas),chequearHas(Hasi,Perc)).
+
+
+
+chequearAt(at(Entidad,Nodo),Perc):-member(node(Nodo,_Y,_Z),Perc),
+
+                                    not(member(at(Entidad,Nodo),Perc)),
+
+                                    retractall(at(Entidad,Nodo)),retractall(atPos(Entidad,_Vec)).
 chequearAt(_,_).
+
+
+
+chequearHas(has([Entidad1,Name1],[Entidad2,Name2]),Perc):-member(at([Entidad1,Name1],_),Perc),
+
+                                                          not(member(has([Entidad1,Name1],[Entidad2,Name2]),Perc)),
+
+                                                          retractall(has([Entidad1,Name1],[Entidad2,Name2])).
+
+chequearHas(_,_).
+
 
 
 
