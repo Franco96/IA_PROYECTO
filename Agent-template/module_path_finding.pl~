@@ -55,8 +55,8 @@ agregar(Frontera,Vis,[],Frontera,Vis).
 
 %vecino no está en frontera ni visitado.
 
-agregar(Frontera,Vis,[nodo(Id,Costo,Camino)|Vecinos],NuevaF,NuevoVis):-not(member(nodo(Id,Cost,_Cam),Frontera)),
-                                                                      not(member(nodo(Id,Cost,_Cam),Vis)),
+agregar(Frontera,Vis,[nodo(Id,Costo,Camino)|Vecinos],NuevaF,NuevoVis):-not(member(nodo(Id,Cost,Cam),Frontera)),
+                                                                      not(member(nodo(Id,Cost,Cam),Vis)),
                                                    agregar([nodo(Id,Costo,Camino)|Frontera],Vis,Vecinos,NuevaF,NuevoVis).
 
 

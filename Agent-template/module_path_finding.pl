@@ -16,8 +16,13 @@
 
 
 buscar_plan_desplazamiento(Metas,Plan,Destino):-at([agent, me], MyNode),node(MyNode,_Vec,_Adj),
-                                                busqueda([nodo(MyNode,0,[])],[],Metas,[Destino|Camino]),
+
+                                          findall(nodoM(NodoMeta,Vec),(member(NodoMeta,Metas),node(NodoMeta,Vec,_)),MetasModif),
+
+                                                busqueda([nodo(MyNode,0,[])],[],MetasModif,[Destino|Camino]),
                                                 acomodarPlan([Destino|Camino],[_X|Plan]).
+
+
 
 
 

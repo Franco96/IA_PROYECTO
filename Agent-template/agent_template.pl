@@ -49,7 +49,7 @@ run:-
 % Arma la lista de nodos metas de la forma nodoM(Id,Vector(X,Y,Z)) para
 % simplificar el problema de busqueda.
 
-armarListaMetas(Entity,Lista):-findall(nodoM(Id,Vector),(at([Entity,_R],Id),node(Id,Vector,_Ady)),Lista).
+armarListaMetas(Entity,Lista):-findall(Id,(at([Entity,_R],Id)),Lista).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% %%%%%%%%%%%%%%%%%%
