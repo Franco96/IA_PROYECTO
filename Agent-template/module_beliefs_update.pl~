@@ -119,9 +119,11 @@ actualizarTerreno(Perc):- findall(at(X,Nodo),(at(X,Nodo)),ListaDeAt),
 
 
 
- chequearAt(at(Entidad,Nodo),Perc):-member(node(Nodo,_Y,_Z),Perc),not(member(at(Entidad,Nodo),Perc)),
+chequearAt(at(Entidad,Nodo),Perc):-member(node(Nodo,_Y,_Z),Perc),
 
-                          retractall(at(Entidad,Nodo)),retractall(atPos(Entidad,_Vec)).
+                                    not(member(at(Entidad,Nodo),Perc)),
+
+                                    retractall(at(Entidad,Nodo)),retractall(atPos(Entidad,_Vec)).
 chequearAt(_,_).
 
 

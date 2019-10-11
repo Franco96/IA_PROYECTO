@@ -73,7 +73,7 @@ rev(atPos(X,Y)):-assert(atPos(X,Y)).
 
 rev(has(X,Y)):-has(X,Y).
 
-rev(has([agent,X],[Obj,Y])):-at([bj,Y],_),retractall(at([Obj,Y],_)),assert(has([agent,X],[Obj,Y])).
+rev(has([agent,X],[Obj,Y])):-at([Obj,Y],_),retractall(at([Obj,Y],_)),assert(has([agent,X],[Obj,Y])).
 
 rev(has([agent,AgentName],[Obj,NameObj])):-has([Building,NameBuil],[Obj,NameObj]),
                     retractall(has([Building,NameBuil],[Obj,NameObj])),assert(has([agent,AgentName],[Obj,NameObj])).
