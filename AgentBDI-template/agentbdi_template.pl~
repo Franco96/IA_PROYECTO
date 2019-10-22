@@ -188,19 +188,7 @@ desire(open([grave, PName]), 'quiero abrir una tumba!'):-
 %desire(rest, 'quiero estar descansado'):-
 	%property([agent, me], life, St),
 	%St < 100.
-%_____________________________________________________________________
-%
-% atacar a otro agente
-%
-%
-%
-desire(attack([agent,Target]), 'quiero atacar a otro agente!'):-
-   atPos([agent, me], MyPos),
-	atPos([agent, Target], TPos),
-	Target \= me,
-	property([agent, Target], life, TLife),
-	TLife > 0,
-	pos_in_attack_range(MyPos, TPos).
+
 
 
 %_____________________________________________________________________
@@ -290,15 +278,6 @@ select_intention(rest, 'voy a recargar antes de encarar otro deseo', Desires):-
 	St < 70.
 
 
-
-%_____________________________________________________________________
-%
-% atacarrr
-%
-%
-select_intention(attack(Obj), 'Ataco a otro agente', Desires):-
-
-	member(attack(Obj), Desires).
 
 
 %_____________________________________________________________________
@@ -484,10 +463,6 @@ planify(get(Obj), Plan):- % Planificación para obtener de un objeto que yace en 
 planify(open(Obj),Plan):-
          at(Obj,Pos),has([agent,me],[potion,P]),
          Plan = [goto(Pos),cast_spell(open(Obj,[potion,P]))].
-
-
-planify(attack(Obj),Plan):-
-         Plan = [attack(Obj)].
 
 
 % -----------------------------------------------------------------------%
