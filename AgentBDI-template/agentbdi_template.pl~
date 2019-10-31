@@ -149,6 +149,8 @@ deliberate:-            % Si llega acá significa que falló el next_primitive_act
 % string con una descripción narrada (breve) de dichas razones,
 % que luego puede ser impresa por pantalla.
 
+
+
 %_____________________________________________________________________
 %
 % Get treasure at position
@@ -189,18 +191,22 @@ desire(get([grave, PName]), 'quiero abrir una tumba!'):-
 desire(explorar(NodoId), 'quiero explorar algun nodo desconocido '):-
                     node(NodoId,_,Ady),member([Desconocido,_],Ady),once(not(node(Desconocido,_,_))).
 
-%_____________________________________________________________________
-%
-% Rest
 
-
-%desire(rest, 'quiero estar descansado'):-
-	%property([agent, me], life, St),
 
 
 %_____________________________________________________________________
 %
-% atacar a otro agente
+% Move at Random
+%
+
+desire(move_at_random, 'quiero estar siempre en movimiento!').
+
+
+
+
+%_____________________________________________________________________
+%
+% atacar a otro agente (PROXIMA ETAPA)
 %
 %
 %
@@ -213,19 +219,9 @@ desire(explorar(NodoId), 'quiero explorar algun nodo desconocido '):-
 	pos_in_attack_range(MyPos, TPos).
 
 */
-%_____________________________________________________________________
-%
-% Move at Random
-%
-
-desire(move_at_random, 'quiero estar siempre en movimiento!').
 
 
 
-% << TODO: DEFINIR OTROS DESEOS >>
-%
-% ACLARACIÓN: Pueden modificarse los deseos considerados, y la
-% implementación actual de desire/2, si se lo considera apropiado.
 
 
 
@@ -247,14 +243,33 @@ desire(move_at_random, 'quiero estar siempre en movimiento!').
 :- dynamic high_priority/2.
 
 
+high_priority(get(Obj), 'Me alcanza la energia para obtener objetos'):-
+
+				property([agent, me], life, St),
+                                St<300,
+                                findall(ObjPos, (
+                                                at(Obj, ObjPos)),
+		                           Metas),
+
+                                buscar_plan_desplazamiento(Metas,_,NodoMeta,CostoAMeta),
+                                 findall(ObjPos, (
+                                                at([inn,_], ObjPos)),
+		                           Posadas),
+                                calcular_costo(NodoMeta,Posadas,CostoVolver),
+
+                                Costo is CostoAMeta + CostoVolver + 20,
+
+                                St > Costo.
+
+/*
 high_priority(rest, 'necesito descansar'):-
 
 	property([agent, me], life, St),
-	St < 150,
+	St < 50,
 
 	once(at([inn, _HName], _Pos)). % se conoce al menos una posada
 
-
+*/
 % << TODO: DEFINIR >>
 %
 % ACLARACIÓN: Puede modificarse la implementación actual de
@@ -293,12 +308,12 @@ high_priority(rest, 'necesito descansar'):-
 %
 % Dado que el nivel de stamina es relativamente bajo, se decide ir
 % descansar antes de abordar otro deseo.
-/*
+
 select_intention(rest, 'voy a recargar antes de encarar otro deseo', Desires):-
 	member(rest, Desires),
 	property([agent, me], life, St),
 	St < 70.
-*/
+
 
 
 %_____________________________________________________________________
@@ -309,8 +324,8 @@ select_intention(rest, 'voy a recargar antes de encarar otro deseo', Desires):-
 /*select_intention(attack(Obj), 'Ataco a otro agente', Desires):-
 
 	member(attack(Obj), Desires).
-*/
 
+*/
 
 
 
@@ -339,7 +354,7 @@ select_intention(get(Obj), 'es el objeto más cercano de los que deseo obtener', 
 	findall(ObjPos, (member(get(Obj), Desires),
 			 at(Obj, ObjPos)),
 		Metas), % Obtengo posiciones de todos los objetos meta tirados en el suelo.
-	buscar_plan_desplazamiento(Metas, _Plan, CloserObjPos),
+	buscar_plan_desplazamiento(Metas, _Plan, CloserObjPos,_),
 	member(get(Obj), Desires),
         at(Obj, CloserObjPos).
 
@@ -353,7 +368,7 @@ select_intention(get(Obj), 'es el objeto más cercano de los que deseo obtener', 
 select_intention(explorar(NodoId), 'Nodo desconocido mas cercados de los que deceo explorar', Desires):-
 			findall(Nodos, (member(explorar(Nodos), Desires)),
 		           Metas), % Obtengo posiciones de todos los nodos desconocidos.
-                            buscar_plan_desplazamiento(Metas, _Plan, CloserNodo),
+                            buscar_plan_desplazamiento(Metas, _Plan, CloserNodo,_),
 				         NodoId=CloserNodo.
 
 
@@ -367,7 +382,7 @@ select_intention(explorar(NodoId), 'Nodo desconocido mas cercados de los que dec
 % Si no existen objetos que deseen obtenerse, y existe el deseo de
 % descansar (stamina por debajo de 100), se decide ir a descansar.
 
-select_intention(rest, 'no tengo otra cosa más interesante que hacer', Desires):-
+select_intention(rest, 'Tengo que recargar energi si no me  muero', Desires):-
 	member(rest, Desires).
 
 
@@ -508,7 +523,6 @@ planning_and_execution(Action):-
 % si es deseable brindar soluciones alternativas.
 
 
-%Nueva IMPLEAMENTACION MIA LAUTARO
 
 planify(get(Obj),Plan):-Obj = [grave,_],
             at(Obj,Pos),has([agent,me],[potion,P]),
@@ -520,10 +534,6 @@ planify(get(Obj), Plan):- % Planificación para obtener de un objeto que yace en 
 	Plan = [goto(Pos), pickup(Obj)].
 
 % ----------IMPLEMENTACION NUESTRA-------------------------------------%
-/*planify(open(Obj),Plan):-
-         at(Obj,Pos),has([agent,me],[potion,P]),
-         Plan = [goto(Pos),cast_spell(open(Obj,[potion,P]))].
-*/
 
 planify(explorar(NodoId), Plan):-
       Plan = [goto(NodoId)].
@@ -539,8 +549,8 @@ planify(attack(Obj),Plan):-
 
 
 planify(goto(PosDest), Plan):- % Planificación para desplazarse a un destino dado
-	buscar_plan_desplazamiento([PosDest], Plan, _MetaLograda),
-	!. % Evita la búsqueda de soluciones alternativas para un plan de desplazamiento.
+	buscar_plan_desplazamiento([PosDest], Plan, _MetaLograda,_),
+		!. % Evita la búsqueda de soluciones alternativas para un plan de desplazamiento.
 
 
 planify(rest, Plan):- % Planificación para descansar
@@ -549,7 +559,7 @@ planify(rest, Plan):- % Planificación para descansar
           findall(PosH, (at([inn, _H], PosH)),
 		Metas), % Obtengo todas las pos de las posadas.
 
-         buscar_plan_desplazamiento(Metas, _Plan, CloserObjPos),
+         buscar_plan_desplazamiento(Metas, _Plan, CloserObjPos,_),
 
                 Plan = [goto(CloserObjPos), stay].
 
