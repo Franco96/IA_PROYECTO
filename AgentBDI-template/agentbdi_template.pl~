@@ -166,7 +166,7 @@ desire(get([relic, TrName]), 'quiero apoderarme de muchos tesoros!'):-
 % Get potion at position
 %
 % Si recuerdo que una pocion dado se encuentra tirado en el piso, tener
-% ese tesoro es una meta.
+% esa pocion es una meta.
 
 desire(get([potion, PName]), 'quiero apoderarme de muchas pociones!'):-
 	at([potion, PName], _PosP).
@@ -175,7 +175,7 @@ desire(get([potion, PName]), 'quiero apoderarme de muchas pociones!'):-
 %
 % Abrir tumba
 %
-%
+% si recuerdo que una tumba tiene reliquias ,abrir tumba es una meta.
 %
 desire(get([grave, PName]), 'quiero abrir una tumba!'):-
 	   has([grave,PName],_),once(has([agent,me],[potion,_])).
@@ -186,12 +186,21 @@ desire(get([grave, PName]), 'quiero abrir una tumba!'):-
 %_____________________________________________________________________
 %
 % Deseo explorar un nodo no conocido
-
+%
+%si recuerdo un nodo que tiene al menos un adyacente que no conozco
+%deceo explorar ese nodo.
+%
 
 desire(explorar(NodoId), 'quiero explorar algun nodo desconocido '):-
                     node(NodoId,_,Ady),member([Desconocido,_],Ady),once(not(node(Desconocido,_,_))).
 
 
+%_____________________________________________________________________
+%
+% descansar si no tengo otra cosa que hacer
+%
+
+desire(rest, 'necesito descansar').
 
 
 %_____________________________________________________________________
@@ -243,37 +252,11 @@ desire(move_at_random, 'quiero estar siempre en movimiento!').
 :- dynamic high_priority/2.
 
 
-high_priority(get(Obj), 'Me alcanza la energia para obtener objetos'):-
 
-				property([agent, me], life, St),
-                                St<300,
-                                findall(ObjPos, (
-                                                at(Obj, ObjPos)),
-		                           Metas),
 
-                                buscar_plan_desplazamiento(Metas,_,NodoMeta,CostoAMeta),
-                                 findall(ObjPos, (
-                                                at([inn,_], ObjPos)),
-		                           Posadas),
-                                calcular_costo(NodoMeta,Posadas,CostoVolver),
+high_priority(rest, 'necesito descansar'):- property([agent, me], life, St),
+	                                    St < 50.
 
-                                Costo is CostoAMeta + CostoVolver + 20,
-
-                                St > Costo.
-
-/*
-high_priority(rest, 'necesito descansar'):-
-
-	property([agent, me], life, St),
-	St < 50,
-
-	once(at([inn, _HName], _Pos)). % se conoce al menos una posada
-
-*/
-% << TODO: DEFINIR >>
-%
-% ACLARACIÓN: Puede modificarse la implementación actual de
-% high_priority/2, si se lo considera apropiado.
 
 
 
@@ -302,62 +285,45 @@ high_priority(rest, 'necesito descansar'):-
 
 
 
-%_____________________________________________________________________
-%
-% Rest before commiting to any other desire
-%
-% Dado que el nivel de stamina es relativamente bajo, se decide ir
-% descansar antes de abordar otro deseo.
-
-select_intention(rest, 'voy a recargar antes de encarar otro deseo', Desires):-
-	member(rest, Desires),
-	property([agent, me], life, St),
-	St < 70.
 
 
 
-%_____________________________________________________________________
-%
-% atacarrr
-%
-%
-/*select_intention(attack(Obj), 'Ataco a otro agente', Desires):-
-
-	member(attack(Obj), Desires).
-
-*/
 
 
 
-/*
-%_____________________________________________________________________
-%
-% Conseguir abrir una tumba la mas cercana
 
-select_intention(open(Obj), 'Es la tumba mas cercana para abrir', Desires):-
-			findall(ObjPos, (member(open(Obj), Desires),
-			 at(Obj, ObjPos)),
-		Metas), % Obtengo posiciones de todas las tumbas.
-	buscar_plan_desplazamiento(Metas, _Plan, CloserObjPos),
-	member(open(Obj), Desires),
-        at(Obj, CloserObjPos).
-*/
 
 %_____________________________________________________________________
 %
 % Conseguir un objeto que se halla tirado en el suelo
 %
-% De todos los posibles objetos tirados en el suelo que el agente desea tener,
-% selecciono como intención obtener aquel que se encuentra más cerca.
-
+% De todos los posibles objetos tirados en el suelo o en las tumbas que
+% el agente desea tener, selecciono como intención obtener aquel que se
+% encuentra más cerca.
+%
 select_intention(get(Obj), 'es el objeto más cercano de los que deseo obtener', Desires):-
-	findall(ObjPos, (member(get(Obj), Desires),
-			 at(Obj, ObjPos)),
-		Metas), % Obtengo posiciones de todos los objetos meta tirados en el suelo.
-	buscar_plan_desplazamiento(Metas, _Plan, CloserObjPos,_),
-	member(get(Obj), Desires),
-        at(Obj, CloserObjPos).
+                  property([agent, me], life, St),
 
+                 findall(ObjPos, (member(get(Obj), Desires),
+				 at(Obj, ObjPos)),
+                  Metas), % Obtengo posiciones de todos los objetos meta tirados en el suelo y de las tumbas.
+
+                once(buscar_plan_desplazamiento(Metas, _Plan, CloserObjPos,CostoMeta)),
+                write('Costo Meta es :'),writeln(CostoMeta),
+                       (St - CostoMeta)>50,
+		member(get(Obj), Desires),
+                at(Obj, CloserObjPos).
+
+
+
+%_____________________________________________________________________
+%
+% rest before commiting to any other desire
+
+select_intention(rest, 'no tengo otra cosa más interesante que hacer', Desires):-
+	member(rest, Desires),
+        property([agent, me], life, St),
+             St < 170.
 
 
 
@@ -366,25 +332,10 @@ select_intention(get(Obj), 'es el objeto más cercano de los que deseo obtener', 
 % explorar de todos los nodos desconocidos el mas cercano al agente
 
 select_intention(explorar(NodoId), 'Nodo desconocido mas cercados de los que deceo explorar', Desires):-
-			findall(Nodos, (member(explorar(Nodos), Desires)),
+                            findall(Nodos, (member(explorar(Nodos), Desires)),
 		           Metas), % Obtengo posiciones de todos los nodos desconocidos.
                             buscar_plan_desplazamiento(Metas, _Plan, CloserNodo,_),
 				         NodoId=CloserNodo.
-
-
-
-
-
-%_____________________________________________________________________
-%
-% Rest
-%
-% Si no existen objetos que deseen obtenerse, y existe el deseo de
-% descansar (stamina por debajo de 100), se decide ir a descansar.
-
-select_intention(rest, 'Tengo que recargar energi si no me  muero', Desires):-
-	member(rest, Desires).
-
 
 
 
@@ -398,10 +349,20 @@ select_intention(move_at_random, 'no tengo otra cosa más interesante que hacer',
 
 
 
-% << TODO: COMPLETAR DEFINICIóN >>
+
+%_____________________________________________________________________
 %
-% ACLARACIÓN: Puede modificarse la implementación actual de
-% select_intention/3, si se lo considera apropiado.
+% atacarrr (PROXIMA ETAPA)
+%
+%
+/*select_intention(attack(Obj), 'Ataco a otro agente', Desires):-
+
+	member(attack(Obj), Desires).
+
+*/
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -425,14 +386,6 @@ achieved(goto(Pos)):-
 	at([agent, me], Pos).
 
 
-% achieved(explorar(nodoId)):-node(nodoId,_,Ady),member(X,Ady),node(X,_,_).
-%
-
-
-% << TODO: COMPLETAR DEFINICIóN >>
-%
-% ACLARACIÓN: Puede modificarse la implementación actual de
-% achieved/1, si se lo considera apropiado.
 
 
 
@@ -524,7 +477,7 @@ planning_and_execution(Action):-
 
 
 
-planify(get(Obj),Plan):-Obj = [grave,_],
+planify(get(Obj),Plan):-Obj = [grave,_],   %si el objeto es de tipo tumba el plan es diferente
             at(Obj,Pos),has([agent,me],[potion,P]),
             Plan = [goto(Pos),cast_spell(open(Obj,[potion,P]))],!.
 
@@ -533,14 +486,14 @@ planify(get(Obj), Plan):- % Planificación para obtener de un objeto que yace en 
 	at(Obj, Pos),
 	Plan = [goto(Pos), pickup(Obj)].
 
-% ----------IMPLEMENTACION NUESTRA-------------------------------------%
 
 planify(explorar(NodoId), Plan):-
       Plan = [goto(NodoId)].
 
 
 
-/*
+
+/*(PROXIMA ETAPA)
 planify(attack(Obj),Plan):-
          Plan = [attack(Obj)].
 */
@@ -581,12 +534,6 @@ planify(move_at_random, Plan):- % Planificación para moverse aleatoriamente
 	random_member(DestPos, PossibleDestPos), % Selecciona aleatoriamente una posición destino.
 				                 % <<<CHOICE POINT>>> (Posibilidad de backtracking)
 	Plan = [goto(DestPos)].
-
-
-% << TODO: COMPLETAR DEFINICIóN >>
-%
-% ACLARACIÓN: Puede modificarse la implementación actual de
-% planify/2, si se lo considera apropiado.
 
 
 
