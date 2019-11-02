@@ -208,7 +208,9 @@ desire(rest, 'necesito descansar').
 % Move at Random
 %
 
-desire(move_at_random, 'quiero estar siempre en movimiento!').
+desire(move_at_random, 'quiero estar siempre en movimiento!'):-
+                     property([agent, me], life, St),
+	                                    St > 150.
 
 
 

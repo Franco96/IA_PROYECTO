@@ -192,6 +192,8 @@ desire(get([grave, PName]), 'quiero abrir una tumba!'):-
 %
 
 desire(explorar(NodoId), 'quiero explorar algun nodo desconocido '):-
+                     property([agent, me], life, St),
+	                                    St > 150,
                     node(NodoId,_,Ady),member([Desconocido,_],Ady),once(not(node(Desconocido,_,_))).
 
 
@@ -208,7 +210,9 @@ desire(rest, 'necesito descansar').
 % Move at Random
 %
 
-desire(move_at_random, 'quiero estar siempre en movimiento!').
+desire(move_at_random, 'quiero estar siempre en movimiento!'):-
+                     property([agent, me], life, St),
+	                                    St > 150.
 
 
 
