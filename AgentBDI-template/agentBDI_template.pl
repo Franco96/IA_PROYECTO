@@ -191,7 +191,7 @@ desire(get([grave, PName]), 'quiero abrir una tumba!'):-
 %deceo explorar ese nodo.
 %
 
-desire(explorar(NodoId), 'quiero explorar algun nodo desconocido '):-
+desire(goto(NodoId), 'quiero explorar algun nodo desconocido '):-
                      property([agent, me], life, St),
 	                                    St > 150,
                     node(NodoId,_,Ady),member([Desconocido,_],Ady),once(not(node(Desconocido,_,_))).
@@ -335,8 +335,8 @@ select_intention(rest, 'no tengo otra cosa más interesante que hacer', Desires):
 %
 % explorar de todos los nodos desconocidos el mas cercano al agente
 
-select_intention(explorar(NodoId), 'Nodo desconocido mas cercados de los que deceo explorar', Desires):-
-                            findall(Nodos, (member(explorar(Nodos), Desires)),
+select_intention(goto(NodoId), 'Nodo desconocido mas cercados de los que deseo explorar', Desires):-
+                            findall(Nodos, (member(goto(Nodos), Desires)),
 		           Metas), % Obtengo posiciones de todos los nodos desconocidos.
                             buscar_plan_desplazamiento(Metas, _Plan, CloserNodo,_),
 				         NodoId=CloserNodo.
@@ -489,10 +489,6 @@ planify(get(Obj),Plan):-Obj = [grave,_],   %si el objeto es de tipo tumba el pla
 planify(get(Obj), Plan):- % Planificación para obtener de un objeto que yace en el suelo
 	at(Obj, Pos),
 	Plan = [goto(Pos), pickup(Obj)].
-
-
-planify(explorar(NodoId), Plan):-
-      Plan = [goto(NodoId)].
 
 
 
