@@ -2,23 +2,14 @@
 
 :- module(path_finding,
 	  [
-	    buscar_plan_desplazamiento/4,
-              calcular_costo/3
+	    buscar_plan_desplazamiento/4
+
 
 	  ]).
 
 :- [module_beliefs_update,extras_for_agents].
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%Calcula el costo de la busqueda
-
-calcular_costo(NodoId,Metas,CostoReal):-node(NodoId,_Vec,_Adj),
-
-                                          findall(nodoM(NodoMeta,Vec),(member(NodoMeta,Metas),node(NodoMeta,Vec,_)),MetasModif),
-
-                                                busqueda([nodo(NodoId,0,[],0)],[],MetasModif,_,CostoReal).
 
 
 

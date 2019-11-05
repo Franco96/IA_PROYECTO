@@ -3,7 +3,7 @@
 :- module(path_finding,
 	  [
 	    buscar_plan_desplazamiento/4,
-              calcular_costo/2
+              calcular_costo/3
 
 	  ]).
 
@@ -14,11 +14,11 @@
 
 %Calcula el costo de la busqueda
 
-calcular_costo(Metas,CostoReal):-at([agent, me], MyNode),node(MyNode,_Vec,_Adj),
+calcular_costo(NodoId,Metas,CostoReal):-node(NodoId,_Vec,_Adj),
 
                                           findall(nodoM(NodoMeta,Vec),(member(NodoMeta,Metas),node(NodoMeta,Vec,_)),MetasModif),
 
-                                                busqueda([nodo(MyNode,0,[],0)],[],MetasModif,_,CostoReal).
+                                                busqueda([nodo(NodoId,0,[],0)],[],MetasModif,_,CostoReal).
 
 
 
