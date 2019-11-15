@@ -149,6 +149,24 @@ deliberate:-            % Si llega acá significa que falló el next_primitive_act
 % string con una descripción narrada (breve) de dichas razones,
 % que luego puede ser impresa por pantalla.
 
+%_____________________________________________________________________
+%Deseo dejar reliquias en home propio
+desire(get([home,H]),'necesito guardar mis tesores en mi home'):-once(has([agent,me],[relic,_])),
+                                                                          property([agent, me], home, H).
+
+
+%_____________________________________________________________________
+%Deseo comprar municion
+desire(buy([ammo,P]),'deseo comprar objeto'):-property([agent, me],gold,Cash),
+                                             has([inn,_],[ammo,P]),
+                                             property([ammo,P],price,Valor),
+                                             Cash>=Valor.
+%_____________________________________________________________________
+%Deseo comprar casco
+desire(buy([helmet,P]),'deseo comprar objeto'):-property([agent, me],gold,Cash),
+                                             has([inn,_],[helmet,P]),
+                                             property([ammo,P],price,Valor),
+                                             Cash>=Valor.
 
 
 %_____________________________________________________________________
@@ -219,19 +237,19 @@ desire(move_at_random, 'quiero estar siempre en movimiento!'):-
 
 %_____________________________________________________________________
 %
-% atacar a otro agente (PROXIMA ETAPA)
+% atacar a otro agente
 %
 %
 %
-/*desire(attack([agent,Target]), 'quiero atacar a otro agente!'):-
-   atPos([agent, me], MyPos),
+desire(attack([agent,Target]), 'quiero atacar a otro agente!'):-
+       atPos([agent, me], MyPos),
 	atPos([agent, Target], TPos),
 	Target \= me,
 	property([agent, Target], life, TLife),
 	TLife > 0,
 	pos_in_attack_range(MyPos, TPos).
 
-*/
+
 
 
 
@@ -261,7 +279,12 @@ desire(move_at_random, 'quiero estar siempre en movimiento!'):-
 high_priority(rest, 'necesito descansar'):- property([agent, me], life, St),
 	                                    St < 50.
 
+high_priority(get([home,H]), 'tengo muchas reliquias necesesito asugurarlas en el home'):-
 
+                  findall(Rname, (has([agent,me],[relic,Rname])),TodasLasReliquias),
+                            size(TodasLasReliquias,Cant),
+                                              Cant>8,
+                                              property([agent, me], home, H).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -288,8 +311,25 @@ high_priority(rest, 'necesito descansar'):- property([agent, me], life, St),
 % viable, o agotarlas a todas.
 
 
+%_____________________________________________________________________
+%
+% atacarrr
+%
+%
+select_intention(attack(Obj), 'Ataco a otro agente', Desires):-
+
+	member(attack(Obj), Desires).
 
 
+
+
+
+%_____________________________________________________________________
+%
+% Comprar
+
+select_intention(buy(Obj), 'Comprar', Desires):-
+	member(buy(Obj), Desires).
 
 
 
@@ -310,10 +350,9 @@ select_intention(get(Obj), 'es el objeto más cercano de los que deseo obtener', 
 
                  findall(ObjPos, (member(get(Obj), Desires),
 				 at(Obj, ObjPos)),
-                  Metas), % Obtengo posiciones de todos los objetos meta tirados en el suelo y de las tumbas.
+                  Metas), % Obtengo posiciones de todos los objetos meta tirados en el suelo y de las tumbas y home.
 
                 once(buscar_plan_desplazamiento(Metas, _Plan, CloserObjPos,CostoMeta)),
-                write('Costo Meta es :'),writeln(CostoMeta),
                        (St - CostoMeta)>50,
 		member(get(Obj), Desires),
                 at(Obj, CloserObjPos).
@@ -353,17 +392,6 @@ select_intention(move_at_random, 'no tengo otra cosa más interesante que hacer',
 
 
 
-
-%_____________________________________________________________________
-%
-% atacarrr (PROXIMA ETAPA)
-%
-%
-/*select_intention(attack(Obj), 'Ataco a otro agente', Desires):-
-
-	member(attack(Obj), Desires).
-
-*/
 
 
 
@@ -481,6 +509,16 @@ planning_and_execution(Action):-
 
 
 
+
+planify(get(Obj),Plan):- Obj = [home,_],at(Obj,Pos),
+
+       findall(drop([relic,Rname]), (has([agent,me],[relic,Rname])),
+		                              ListaDeDrop),
+
+         append([goto(Pos)],ListaDeDrop,Plan).
+
+
+
 planify(get(Obj),Plan):-Obj = [grave,_],   %si el objeto es de tipo tumba el plan es diferente
             at(Obj,Pos),has([agent,me],[potion,P]),
             Plan = [goto(Pos),cast_spell(open(Obj,[potion,P]))],!.
@@ -493,10 +531,16 @@ planify(get(Obj), Plan):- % Planificación para obtener de un objeto que yace en 
 
 
 
-/*(PROXIMA ETAPA)
+planify(buy(Obj),Plan):- has([inn,PosaName],Obj),at([inn,PosaName],Pos),
+         Plan = [goto(Pos),buy([inn,PosaName],Obj)].
+
+
+
+
+
 planify(attack(Obj),Plan):-
          Plan = [attack(Obj)].
-*/
+
 
 % -----------------------------------------------------------------------%
 

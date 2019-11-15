@@ -268,7 +268,7 @@ implies(_Ant, _Cons).
 %Hecho por nosotros Lautaro y Leandro
 
 size([],0).
-size([_|Y],N):-size(Y,N1),N is N1+1.
+size([X|Y],N):-size(Y,N1),N is N1+1.
 
 
 
