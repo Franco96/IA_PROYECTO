@@ -155,12 +155,55 @@ desire(get([home,H]),'necesito guardar mis tesores en mi home'):-once(has([agent
                                                                           property([agent, me], home, H).
 
 
+desire(saquear([home,Hoponente]),'deseo abrir el home del oponente'):-once(has([agent,me],[potion,_])),
+                                                           property([agent, me], home, H),
+                                                           at([home,Hoponente],_),
+                                                           H\=Hoponente,
+                                                           once(has([home,Hoponente],[relic,_])).
 %_____________________________________________________________________
-%Deseo comprar
-desire(buy([ammo,P]),'deseo comprar objeto'):-property([agent, me],gold,Cash),
-                                             has([inn,_],[ammo,P]),
-                                             property([ammo,P],price,Valor),
+
+desire(buy([potion,P]),'deseo comprar objeto'):-
+                                             has([agent,me],[helmet,_]),
+                                             has([agent,me],[ammo,_]),
+                                             not(has([agent,me],[potion,_])),
+                                             property([agent, me],gold,Cash),
+                                             has([inn,_],[potion,P]),
+                                             property([potion,P],price,Valor),
                                              Cash>=Valor.
+
+%_____________________________________________________________________
+%Deseo comprar casco
+desire(buy([helmet,P]),'deseo comprar objeto'):-
+                                             not(has([agent,me],[helmet,_])),
+                                             property([agent, me],gold,Cash),
+                                             findall(Valor,(has([inn,_],[helmet,Casco]),
+                                                        property([helmet,Casco],price,Valor)),Valores),
+
+
+                                                    max_list(Valores,Val),
+
+                                                     Cash>=Val,
+                                                    findall(Casco,(has([inn,_],[helmet,Casco]),
+                                                        property([helmet,Casco],price,Valor),
+                                                                  Valor=Val),Cascos),
+                                                    once(member(P,Cascos)).
+
+
+%Deseo comprar Balas
+desire(buy([ammo,P]),'deseo comprar Balas'):-   not(has([agent,me],[ammo,_])),
+
+                                             property([agent, me],gold,Cash),
+                                             findall(Valor,(has([inn,_],[ammo,Muni]),
+                                                        property([ammo,Muni],price,Valor)),Valores),
+
+                                               max_list(Valores,Val),
+
+                                                     Cash>=Val,
+                                                    findall(Municion,(has([inn,_],[ammo,Municion]),
+                                                        property([ammo,Municion],price,Valor),
+                                                                  Valor=Val),M),
+                                                    once(member(P,M)).
+
 
 
 %_____________________________________________________________________
@@ -171,7 +214,33 @@ desire(buy([ammo,P]),'deseo comprar objeto'):-property([agent, me],gold,Cash),
 % ese tesoro es una meta.
 
 desire(get([relic, TrName]), 'quiero apoderarme de muchos tesoros!'):-
-	at([relic, TrName], _PosTr).
+
+	atPos([relic, TrName],PosRelic),
+
+
+                  property([agent, me], home, Hmio),
+                  property([agent, Target], home, Htarget),
+                   Hmio=Htarget,
+
+                   atPos([agent,me],PosVecMe),
+                   atPos([agent,Target],PosVecTar),
+                   distance(PosVecMe,PosRelic,DistanciaMe),
+                    distance(PosVecTar,PosRelic,DistanciaTarget),
+                     DistanciaMe<DistanciaTarget.
+
+desire(get([relic, TrName]), 'quiero apoderarme de muchos tesoros!'):-
+
+	at([relic, TrName],_),
+
+        findall(Agente,(at([agent,Agente],_Pos),Agente\=me),Agentes),
+
+          max_list(Agentes,N),
+          N=0.
+
+
+
+
+
 
 %_____________________________________________________________________
 %
@@ -190,9 +259,18 @@ desire(get([potion, PName]), 'quiero apoderarme de muchas pociones!'):-
 % si recuerdo que una tumba tiene reliquias ,abrir tumba es una meta.
 %
 desire(get([grave, PName]), 'quiero abrir una tumba!'):-
-	   has([grave,PName],_),once(has([agent,me],[potion,_])).
+	   has([grave,PName],_),
+            findall(Pname, (has([agent,me],[potion,Pname])),TodasLasPociones),
+                            proper_length(TodasLasPociones,Cant),
+                                              Cant>1.
 
 
+%_____________________________________________________________________
+desire(get([helmet, PName]), 'quiero apoderarme de muchas pociones!'):-
+	at([helmet, PName], _PosP).
+
+desire(get([ammo, PName]), 'quiero apoderarme de muchas pociones!'):-
+	at([ammo, PName], _PosP).
 
 
 %_____________________________________________________________________
@@ -238,7 +316,9 @@ desire(move_at_random, 'quiero estar siempre en movimiento!'):-
 desire(attack([agent,Target]), 'quiero atacar a otro agente!'):-
        atPos([agent, me], MyPos),
 	atPos([agent, Target], TPos),
-	Target \= me,
+        property([agent, me], home, Hmio),
+        property([agent, Target], home, Htarget),
+        Hmio\=Htarget,
 	property([agent, Target], life, TLife),
 	TLife > 0,
 	pos_in_attack_range(MyPos, TPos).
@@ -276,8 +356,8 @@ high_priority(rest, 'necesito descansar'):- property([agent, me], life, St),
 high_priority(get([home,H]), 'tengo muchas reliquias necesesito asugurarlas en el home'):-
 
                   findall(Rname, (has([agent,me],[relic,Rname])),TodasLasReliquias),
-                            size(TodasLasReliquias,Cant),
-                                              Cant>8,
+                            proper_length(TodasLasReliquias,Cant),
+                                              Cant>11,
                                               property([agent, me], home, H).
 
 
@@ -305,6 +385,7 @@ high_priority(get([home,H]), 'tengo muchas reliquias necesesito asugurarlas en e
 % viable, o agotarlas a todas.
 
 
+
 %_____________________________________________________________________
 %
 % atacarrr
@@ -317,13 +398,22 @@ select_intention(attack(Obj), 'Ataco a otro agente', Desires):-
 
 
 
-
 %_____________________________________________________________________
 %
 % Comprar
 
 select_intention(buy(Obj), 'Comprar', Desires):-
 	member(buy(Obj), Desires).
+
+
+
+%_____________________________________________________________________
+%Saquear
+
+
+select_intention(saquear(Obj), 'Saqueo home del oponente', Desires):-
+
+	member(saquear(Obj), Desires).
 
 
 
@@ -340,6 +430,8 @@ select_intention(buy(Obj), 'Comprar', Desires):-
 % encuentra más cerca.
 %
 select_intention(get(Obj), 'es el objeto más cercano de los que deseo obtener', Desires):-
+
+
                   property([agent, me], life, St),
 
                  findall(ObjPos, (member(get(Obj), Desires),
@@ -348,8 +440,10 @@ select_intention(get(Obj), 'es el objeto más cercano de los que deseo obtener', 
 
                 once(buscar_plan_desplazamiento(Metas, _Plan, CloserObjPos,CostoMeta)),
                        (St - CostoMeta)>50,
+
 		member(get(Obj), Desires),
                 at(Obj, CloserObjPos).
+
 
 
 
@@ -534,6 +628,11 @@ planify(buy(Obj),Plan):- has([inn,PosaName],Obj),at([inn,PosaName],Pos),
 
 planify(attack(Obj),Plan):-
          Plan = [attack(Obj)].
+
+
+planify(saquear(Obj),Plan):-at(Obj,Pos),has([agent,me],[potion,P]),
+            Plan = [goto(Pos),cast_spell(open(Obj,[potion,P]))],!.
+
 
 
 % -----------------------------------------------------------------------%

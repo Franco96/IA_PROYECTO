@@ -12,9 +12,8 @@
 	    random_member/2,
 	    last_element/2,
 	    delete_if_exists/3,
-	    distance/3,
-	    size/2
-	  ]).
+	    distance/3
+		  ]).
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -264,11 +263,7 @@ implies(_Ant, _Cons).
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Hecho por nosotros Lautaro y Leandro
 
-size([],0).
-size([_|Y],N):-size(Y,N1),N is N1+1.
 
 
 
